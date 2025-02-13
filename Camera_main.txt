@@ -1,0 +1,44 @@
+Camera`s hostname: localhost
+
+{
+    'DateTimeType': 'Manual',
+    'DaylightSavings': False,
+    'TimeZone': {
+        'TZ': 'CST-8'
+    },
+    'UTCDateTime': {
+        'Time': {
+            'Hour': 16,
+            'Minute': 48,
+            'Second': 22
+        },
+        'Date': {
+            'Year': 2025,
+            'Month': 2,
+            'Day': 13
+        }
+    },
+    'LocalDateTime': {
+        'Time': {
+            'Hour': 0,
+            'Minute': 48,
+            'Second': 22
+        },
+        'Date': {
+            'Year': 2025,
+            'Month': 2,
+            'Day': 14
+        }
+    },
+    'Extension': None,
+    '_attr_1': None
+}
+
+{
+    'Manufacturer': 'ONVIF',
+    'Model': 'PNC-PTZ-4A4X33-H',
+    'FirmwareVersion': 'V1.2.5 build20240402',
+    'SerialNumber': '12304133002083810',
+    'HardwareId': '1.00',
+    '_raw_elements': deque([<Element {http://www.onvif.org/ver10/device/wsdl}PTZModel at 0x76131581e4c0>, <Element {http://www.onvif.org/ver10/device/wsdl}PTZVersion at 0x76131581e500>])
+}
