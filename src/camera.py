@@ -19,7 +19,7 @@ class Camera:
         if not config_path is None:
             self.__init_from_config(config_path)
             return self
-        self.ip = ip
+        self.ip = str(ip)
         self.port = port
         self.user = user
         self.password = password
