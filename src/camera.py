@@ -171,3 +171,5 @@ class Camera:
 
     def reboot(self):
         return self.cam.devicemgmt.SystemReboot()
+    
+# cam = Camera('77.232.155.123', '16455', 'falt', 'panofalt1234', "C:/Users/aggz1/MPTI Informatics/Sesestr4/cringeprak/Panocam_ONVIF_connect/venv/lib/python3.10/site-packages/wsdl")
