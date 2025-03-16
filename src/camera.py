@@ -121,7 +121,7 @@ class Camera:
     
     @__profile_token
     @__ptz_service
-    def move_zoom(self, x_speed = 0, y_speed = 0, zoom_speed = 0, duration = 0.5, method_is_blocking = True):
+    def continiousMove(self, x_speed = 0, y_speed = 0, zoom_speed = 0, duration = 0.5, method_is_blocking = True):
         if (abs(x_speed) + abs(y_speed) + abs(zoom_speed)) == 0:
             return
 
