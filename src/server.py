@@ -38,8 +38,6 @@ class UserConnectionData:
                 except RuntimeError:
                     is_connected = False
 
-                print(self.cameras)
-
                 return {
                     "type": "ConnectionResponse",
                     "block": {
@@ -49,9 +47,8 @@ class UserConnectionData:
                 }
             case "SetMoveSpeed":
                 self.data["default_values"]["default_speed"][key] = Speed(**block["speed"])
-                print(self.data)
                 return None
-            case "ContiniousMove": # dddddddddd
+            case "ContiniousMove":
                 chosen_camera.move_zoom(**block["speed"], duration=block["duration"])
                 return None
             case "GetPosition":
@@ -63,8 +60,6 @@ class UserConnectionData:
                     }
                 }
             # case "SetHomePosition":
-            #     self.data["home_position"] = Position(**block["position"])
-            #     return None
             # case "MoveToHomePosition":
             case "StopMoving":
                 chosen_camera.stopMoving(block["stop_x_y"], block["stop_zoom"])
@@ -74,7 +69,6 @@ class UserConnectionData:
             # case "GetRTSP":
             # case "GetAvailableCameras":
             # case "AbsoluteMove":
-            #     chosen_camera.
             case "GetLimits":
                 return {
                     "type": "Limits",
