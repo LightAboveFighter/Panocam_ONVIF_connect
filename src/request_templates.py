@@ -104,6 +104,9 @@ class SetHomePositionBlock(NeedsCameraSchema):
     
 # class CloseConnectionBlock(Schema):
 
+class CloseConnectionBlock(NeedsCameraSchema):
+    pass
+
 # class GetRTSPBlock(Schema):
 
 # class GetAvailableCamerasBlock(Schema):

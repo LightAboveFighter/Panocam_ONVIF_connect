@@ -64,8 +64,10 @@ class UserConnectionData:
             case "StopMoving":
                 chosen_camera.stopMoving(block["stop_x_y"], block["stop_zoom"])
                 return None
-            # case "CloseConnection":
-            #     self.cameras[CameraName(**block["camera_name"]).as_key()].StopMove()
+            case "CloseConnection":
+                chosen_camera.stopMoving(True, True)
+                self.cameras.pop(key)
+                return None
             # case "GetRTSP":
             # case "GetAvailableCameras":
             # case "AbsoluteMove":
