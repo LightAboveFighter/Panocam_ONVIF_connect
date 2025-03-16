@@ -1,201 +1,150 @@
 import socket
-from dataclasses import dataclass, asdict
 import json
+from json.decoder import JSONDecodeError
 from camera import Camera
+import request_templates as templates
+from marshmallow import Schema
+from marshmallow.exceptions import ValidationError as MarshmallowValidationError
+import importlib
+from structures import Speed, CameraName, Position
 
-class MissedRequiredField(Exception):
-    pass
 
 class UserConnectionData:
     cameras: dict[str, Camera]
+    data: dict[str]   
 
+    def __init__(self):
+        self.cameras = {}
+        self.data = {"default_values": {}, "default_speed": {}}
 
-@dataclass
-class CameraConf:
-    ip: str
-    port: int
-
-@dataclass
-class Position:
-    x: float
-    y: float
-    zoom: float
-
-Messages_descriptions = {
-    "ConnectionRequest": {
-        "required_fields": ["ip", "port", "user", "password"],
-        "response": {
-            "type": "ConnectionResponse"
-        }
-    },
-    "SetMoveVelocity": {
-        "required_fields": ["x_velocity", "y_velocity", "zoom_velocity"],
-        "response": None
-    },
-    "ContiniousMove": {
-        "required_fields": ["duration"],
-        "response": None
-    },
-    "GetPosition": {
-        "required_fields": [],
-        "response": {
-            "type": "Position",
-            "block": {
-                "position": Position
-            }
-        }
-    },
-    "SetHomePosition": {
-        "required_fields": ["position"],
-        "response": {
-            "type": "ConnectionResponse"
-        }
-    },
-    "MoveToHomePosition": {
-        "required_fields": [],
-        "response": {
-            "type": "ConnectionResponse"
-        }
-    },
-    "CloseConnection": {
-        "required_fields": [],
-        "response": {
-            "type": "ConnectionResponse"
-        }
-    },
-    "GetRTSP": {
-        "required_fields": [],
-        "response": {
-            "type": "ConnectionResponse"
-        }
-    },
-    "GetAvailableCameras": {
-        "required_fields": [],
-        "response": {
-            "type": "ConnectionResponse"
-        }
-    },
-    "StopMoving": {
-        "required_fields": [],
-        "response": {
-            "type": "ConnectionResponse"
-        }
-    },
-    "AbsoluteMove": {
-        "required_fields": ["position", "velocity"],
-        "response": {
-            "type": "ConnectionResponse"
-        }
-    },
-    "GetLimits": { # отсылаем лимиты при подключении к камере. Узнать чему соответствуют макс и мин значения зума (х2 или х30)
-        "required_fields": [],
-        "response": {
-            "type": "ConnectionResponse"
-        }
-    },
-}
-
-with open("example.json", "w") as file:
-    json.dump(asdict(Position(1, 2, 3)), file)
-
-print(asdict(Position(2,5,6)))
-
-# def check_required_fields()
-
-def do_request(client_cell, request: dict) -> tuple[int, dict]:
-
-    request_type = request["type"]
-    print(request)
-
-    # match request_type:
-    #     case "ConnectionRequest":
-
-    #         client_cell = {
-    #             "cameras": []
-    #         }
-    #         client_cell["cameras"].append( Camera() )
-    #         return 0
-    #     case "SetMoveVelocity":
-    #     case "ContiniousMove":
-    #     case "GetPosition":
-    #     case "SetHomePosition":
-    #     case "MoveToHomePosition":
-    #     case "CloseConnection":
-    #     case "GetRTSP":
-    #     case "GetAvailableCameras":
-    #     case "StopMoving":
-    #     case "AbsoluteMove":
-    #         pass
-    #     case "GetLimits":
-    #         pass
-
-def run_server():
-
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_socket.bind(('192.168.0.221', 56000))
-    # server_socket.listen(1)
-
-    clients = {}
-
-    while True:
-
-        message, client_address = server_socket.recvfrom(1028)
-        clients[client_address] = None
-
-        res, response = do_request(clients[client_address], dict(message))
-
-        if res < 0:
-            print(f"[{client_address}]: IncorrectValue")
-            server_socket.send({"type": "IncorrectValue"})
-            break
-        print(f"[{client_address}]: {dict(message)['type']}")
-        if res == 0:
-            continue
+    def do_request(self, request_type: str, block: dict):
         
-        server_socket.send(response)
-        print(f"[SERVER]: {response['type']} to [{client_address}]")
+        if "camera_name" in block.keys() and request_type != "ConnectionRequest":
+            key = CameraName(**block["camera_name"]).as_key()
+            chosen_camera = self.cameras.get(key, None)
+            if chosen_camera is None:
+                return {
+                        "block": {
+                            "camera_name": [ {key: "is not connected."} ]
+                        }
+                    }
 
-        # client_socket, client_address = server_socket.accept()
-        # print(f"[{client_address}]: Connection accepted")
+        match request_type:
+            case "ConnectionRequest":
+                # for camera_params in block["cameras"]:
+                is_connected = True
+                try:
+                    self.cameras[CameraName(**block["camera_name"]).as_key()] = Camera(**block["camera_name"], user=block["user"], password=block["password"])
+                except RuntimeError:
+                    is_connected = False
 
-        while True:
-            message, client_address = server_socket.recvfrom(1028)
-            res, response = do_request(dict(message))
+                print(self.cameras)
 
-            if res < 0:
-                print(f"[{client_address}]: IncorrectValue")
-                server_socket.send({"type": "IncorrectValue"})
-                break
-            print(f"[{client_address}]: {dict(message)['type']}")
-            if res == 0:
-                continue
+                return {
+                    "type": "ConnectionResponse",
+                    "block": {
+                        "camera_name": block["camera_name"],
+                        "is_connected": is_connected
+                    }
+                }
+            case "SetMoveSpeed":
+                self.data["default_values"]["default_speed"][key] = Speed(**block["speed"])
+                print(self.data)
+                return None
+            case "ContiniousMove": # dddddddddd
+                chosen_camera.move_zoom(**block["speed"], duration=block["duration"])
+                return None
+            case "GetPosition":
+                cam_request = chosen_camera.getPosition()
+                return {
+                    "type": "Position",
+                    "block": {
+                        "position": Position(cam_request["PanTilt"]["x"], cam_request["PanTilt"]["y"], cam_request["Zoom"]["x"]).as_dict()
+                    }
+                }
+            # case "SetHomePosition":
+            #     self.data["home_position"] = Position(**block["position"])
+            #     return None
+            # case "MoveToHomePosition":
+            case "StopMoving":
+                chosen_camera.stopMoving(block["stop_x_y"], block["stop_zoom"])
+                return None
+            # case "CloseConnection":
+            #     self.cameras[CameraName(**block["camera_name"]).as_key()].StopMove()
+            # case "GetRTSP":
+            # case "GetAvailableCameras":
+            # case "AbsoluteMove":
+            #     chosen_camera.
+            case "GetLimits":
+                return {
+                    "type": "Limits",
+                    "block": chosen_camera.getLimits()
+                }
             
-            server_socket.send(response)
-            print(f"[SERVER]: {response['type']} to [{client_address}]")
 
+class Server:
+
+    main_socket: socket.socket
+    connected_users: dict[str, UserConnectionData]
+
+    # {request_type: TemplateClass()}
+    __request_templates_by_name: dict[str, Schema] = {
+        cls: getattr(importlib.import_module("request_templates"), cls+"Block")() for cls in templates.allowed_types
+    }
+
+    def __init__(self):
+        self.connected_users = {}
+
+        # getting our local address
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 56000))
+        ip_addr = s.getsockname()[0]
+        s.close()
         
-        # client_socket.close()
-        print(f"[SERVER]: Connection closed: [{client_address}]")
+        self.main_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.main_socket.bind((ip_addr, 56000))
+        print(f"[SERVER]: started at {ip_addr}")
 
+    def run(self, client_amount=1, flush=True):
+    
+        while True:
+            message, client = self.main_socket.recvfrom(1024)
 
+            print(f"[{client[0]}]: ", message.decode(encoding="utf-8"), flush=flush)
+            response = self.do_request(client[0], message.decode(encoding="utf-8"))
 
+            if not response is None:
+                print(f"[SERVER]: {client[0]} ", response, flush=True)
+                self.main_socket.sendto(bytes(response, encoding="utf-8"), client)
 
-# import asyncio
-# import random
+    def do_request(self, user_ip: str, request: str):
+        try:
+            request_dict = templates.RequestBody().loads(request)
+        except MarshmallowValidationError as err:
+            return json.dumps(err.normalized_messages())
+        except JSONDecodeError as err:
+            return json.dumps({"Invalid syntax": f"{err.msg}, position {err.pos}"})
+        
+        try:
+            block = self.__request_templates_by_name[request_dict["type"]].load(request_dict["block"])
+        except MarshmallowValidationError as err:
+            return json.dumps((err.normalized_messages()))
 
-# class EchoServerProtocol:
-#     def connection_made(self, transport):
-#         self.transport = transport
+        if not user_ip in self.connected_users.keys():
+            self.connected_users[user_ip] = UserConnectionData()
 
-#     def datagram_received(self, data, addr):
-#         message = data.decode()
-#         print('Received %r from %s' % (message, addr))
-#         rand = random.randint(0, 10)
-#         if rand >= 4:
-#             print('Send %r to %s' % (message, addr))
-#             self.transport.sendto(data, addr)
-#         else:
-#             print('Send %r to %s' % (message, addr))
-#             self.transport.sendto(data, addr)
-
-# run_server()
+        response = self.connected_users[user_ip].do_request(request_dict["type"], block)
+        if not response is None:
+            response = json.dumps(response)
+        
+        # для каждого запроса без отдельного ответа - возвращаем сообщение о выполнении данного запроса
+        else:
+            response = json.dumps(
+                {
+                    "type": request_dict["type"] + "Response"
+                }
+            )
+        return response
+    
+server = Server()
+server.run()
