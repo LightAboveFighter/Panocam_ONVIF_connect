@@ -2,7 +2,7 @@ from socket import AF_INET, SOCK_DGRAM, socket
 from json import dumps as json_dumps
 from json.decoder import JSONDecodeError
 from camera import Camera
-from request_templates import RequestBody, allowed_types
+from request_templates import RequestBody, implemented_types
 from marshmallow import Schema
 from marshmallow.exceptions import ValidationError as MarshmallowValidationError
 from importlib import import_module
