@@ -1,0 +1,4 @@
+marshamllow
+onvif-zeep
+opencv-python
+sockets
