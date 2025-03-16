@@ -1,11 +1,11 @@
-import socket
-import json
+from socket import AF_INET, SOCK_DGRAM, socket
+from json import dumps as json_dumps
 from json.decoder import JSONDecodeError
 from camera import Camera
-import request_templates as templates
+from request_templates import RequestBody, allowed_types
 from marshmallow import Schema
 from marshmallow.exceptions import ValidationError as MarshmallowValidationError
-import importlib
+from importlib import import_module
 from structures import Speed, CameraName, Position
 
 
@@ -80,24 +80,24 @@ class UserConnectionData:
 
 class Server:
 
-    main_socket: socket.socket
+    main_socket: socket
     connected_users: dict[str, UserConnectionData]
 
     # {request_type: TemplateClass()}
     __request_templates_by_name: dict[str, Schema] = {
-        cls: getattr(importlib.import_module("request_templates"), cls+"Block")() for cls in templates.allowed_types
+        cls: getattr(import_module("request_templates"), cls+"Block")() for cls in implemented_types()
     }
 
     def __init__(self):
         self.connected_users = {}
 
         # getting our local address
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s = socket(AF_INET, SOCK_DGRAM)
         s.connect(("8.8.8.8", 56000))
         ip_addr = s.getsockname()[0]
         s.close()
         
-        self.main_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.main_socket = socket(AF_INET, SOCK_DGRAM)
         self.main_socket.bind((ip_addr, 56000))
         print(f"[SERVER]: started at {ip_addr}")
 
@@ -115,27 +115,27 @@ class Server:
 
     def do_request(self, user_ip: str, request: str):
         try:
-            request_dict = templates.RequestBody().loads(request)
+            request_dict = RequestBody().loads(request)
         except MarshmallowValidationError as err:
-            return json.dumps(err.normalized_messages())
+            return json_dumps(err.normalized_messages())
         except JSONDecodeError as err:
-            return json.dumps({"Invalid syntax": f"{err.msg}, position {err.pos}"})
+            return json_dumps({"Invalid syntax": f"{err.msg}, position {err.pos}"})
         
         try:
             block = self.__request_templates_by_name[request_dict["type"]].load(request_dict["block"])
         except MarshmallowValidationError as err:
-            return json.dumps((err.normalized_messages()))
+            return json_dumps((err.normalized_messages()))
 
         if not user_ip in self.connected_users.keys():
             self.connected_users[user_ip] = UserConnectionData()
 
         response = self.connected_users[user_ip].do_request(request_dict["type"], block)
         if not response is None:
-            response = json.dumps(response)
+            response = json_dumps(response)
         
         # для каждого запроса без отдельного ответа - возвращаем сообщение о выполнении данного запроса
         else:
-            response = json.dumps(
+            response = json_dumps(
                 {
                     "type": request_dict["type"] + "Response"
                 }

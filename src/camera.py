@@ -1,11 +1,14 @@
-from onvif import ONVIFCamera, exceptions, ONVIFService
-import cv2
-import json
-import time
+from onvif import ONVIFCamera, ONVIFService
+from onvif.exceptions import ONVIFError
+from cv2 import VideoCapture, imshow, waitKey
+from json import load as json_load
+from time import sleep
 from zeep.transports import Transport
 from os.path import dirname, join
-import inspect
-import re
+from inspect import getfile
+from re import sub as re_sub
+from structures import Position
+
 
 class Camera:
     cam: ONVIFCamera
@@ -31,7 +34,7 @@ class Camera:
 
     def __init_from_config(self, config_path: str, timeout: int):
         with open(config_path, "r") as access_file:
-            data = json.load(access_file)
+            data = json_load(access_file)
             self.ip = data["ip"]
             self.port = data["port"]
             self.user = data["user"]
@@ -41,13 +44,13 @@ class Camera:
     
     def __set_connection(self, timeout: int):
         
-        wsdl_path = join(dirname(dirname(inspect.getfile(ONVIFCamera))), "wsdl")
+        wsdl_path = join(dirname(dirname(getfile(ONVIFCamera))), "wsdl")
         self.cam = ONVIFCamera(self.ip, self.port, self.user, self.password, wsdl_path, transport=Transport(timeout=timeout))
 
         capabilities = self.getCapabilities()
         if capabilities["Device"]["XAddr"].find("192.168.") != -1:
             self.cam.xaddrs = { 
-                url: re.sub(r'192\.168\.\d*\.\d*', self.ip+":"+str(self.port), addr) 
+                url: re_sub(r'192\.168\.\d*\.\d*', self.ip+":"+str(self.port), addr) 
                 for url, addr in self.cam.xaddrs.items() 
                 }
 
@@ -130,7 +133,7 @@ class Camera:
         )
         
         if method_is_blocking:
-            time.sleep(duration)
+            sleep(duration)
             self.StopMoving(True, True)
         else:   
             pass
@@ -165,11 +168,11 @@ class Camera:
 
     def see_video(self, video_stream_link: str):
 
-        vcap = cv2.VideoCapture(video_stream_link)
+        vcap = VideoCapture(video_stream_link)
         while(1):
             success, frame = vcap.read()
-            cv2.imshow('Camera_{self.ip}', frame)
-            cv2.waitKey(1)
+            imshow('Camera_{self.ip}', frame)
+            waitKey(1)
 
     def reboot(self):
         return self.cam.devicemgmt.SystemReboot()

@@ -1,15 +1,20 @@
 from marshmallow import Schema, fields, validates, post_load
 from marshmallow.exceptions import ValidationError as MarshmallowValidationError
 from marshmallow.validate import Range
-import inspect, sys
+from inspect import getmembers, isclass
+from sys import modules
 
-    
+
+def implemented_types():
+    return [cls.__name__.replace("Block", "") for _, cls in getmembers(modules[__name__], isclass) if (cls.__module__ == __name__) and (cls.__name__.count("Block") != 0)] 
+
+
 class RequestBody(Schema):
     type = fields.String(required=True)
     block = fields.Dict(required=False)
         
     def __init__(self, *args, **kwargs):
-        self.allowed_types = [cls.__name__.replace("Block", "") for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass) if (cls.__module__ == __name__) and (cls.__name__.count("Block") != 0)]
+        self.allowed_types = implemented_types()
         super().__init__(*args, **kwargs)
 
     @validates("type")
@@ -123,8 +128,3 @@ class AbsoluteMoveBlock(NeedsCameraSchema):
 
 class GetLimitsBlock(NeedsCameraSchema):
     pass
-
-
-allowed_types = {
-    cls.__name__.replace("Block", "") for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass) if (cls.__module__ == __name__) and (cls.__name__.count("Block") != 0)
-    }
