@@ -1,4 +1,4 @@
-marshamllow
+marshmallow
 onvif-zeep
 opencv-python
 sockets
