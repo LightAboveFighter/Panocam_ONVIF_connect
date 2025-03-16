@@ -135,22 +135,28 @@ class Camera:
         
         if method_is_blocking:
             time.sleep(duration)
-            self.ptz_service.Stop({'ProfileToken': self.profile_token, 'PanTilt': True, 'Zoom': True})
+            self.StopMoving(True, True)
         else:   
             pass
+
+    # def absoluteMove(self, x: float, y: float, zoom: float, x_speed: float, y_speed: float, zoom_speed: float):
+
+    
+    @__ptz_service
+    def stopMoving(self, stop_x_y: bool, stop_zoom: bool):
+        self.ptz_service.Stop({'ProfileToken': self.profile_token, 'PanTilt': stop_x_y, 'Zoom': stop_zoom})
     
     @__ptz_service
     def getPTZConfiguration(self):
         return self.getProfiles()[0].PTZConfiguration
     
     def getLimits(self):
-        """return [ (x_min, x_max), (y_min, y_max), (zoom_min, zoom_max) ]"""
         ptz_config = self.getPTZConfiguration()
         tilt_ranges = ptz_config["PanTiltLimits"]["Range"]
-        x_range = ( tilt_ranges["XRange"]["Min"], tilt_ranges["XRange"]["Max"] )
-        y_range = ( tilt_ranges["YRange"]["Min"], tilt_ranges["YRange"]["Max"] )
-        zoom_range = ( ptz_config["ZoomLimits"]["Range"]["XRange"]["Min"], ptz_config["ZoomLimits"]["Range"]["XRange"]["Max"] )
-        return [x_range, y_range, zoom_range]
+        return {
+            "position_min": Position(tilt_ranges["XRange"]["Min"], tilt_ranges["XRange"]["Min"], ptz_config["ZoomLimits"]["Range"]["XRange"]["Min"]).as_dict(),
+            "position_max": Position(tilt_ranges["XRange"]["Max"], tilt_ranges["XRange"]["Max"], ptz_config["ZoomLimits"]["Range"]["XRange"]["Max"]).as_dict()
+        }
     
     # @__ptz_service
     # def gotoHomePosition(self):
