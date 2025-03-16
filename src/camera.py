@@ -134,7 +134,7 @@ class Camera:
         
         if method_is_blocking:
             sleep(duration)
-            self.StopMoving(True, True)
+            self.stopMoving(True, True)
         else:   
             pass
 
