@@ -2,8 +2,9 @@ from onvif import ONVIFCamera, exceptions, ONVIFService
 import cv2
 import json
 import time
-import glob
-import os
+from zeep.transports import Transport
+from os.path import dirname, join
+import inspect
 import re
 
 class Camera:
@@ -11,13 +12,12 @@ class Camera:
     media_service: ONVIFService | None
     ptz_service: ONVIFService | None
 
-    def __init__(self, ip: str, port: int, user: str, password: str, wsdl_path = None, config_path = None):
+    def __init__(self, ip: str, port: int, user: str, password: str, config_path = None, timeout: int = 1):
         """
-        wsdl_path - only if you have specified path to wsdl in onvif library
         config_path - if you want initialization from config file
         """
         if not config_path is None:
-            self.__init_from_config(config_path)
+            self.__init_from_config(config_path, timeout)
             return self
         self.ip = str(ip)
         self.port = port
@@ -27,26 +27,22 @@ class Camera:
         self.ptz_service = None
         self.profile_token = None
 
-        self.__set_connection(wsdl_path)
+        self.__set_connection(timeout)
 
-    def __init_from_config(self, config_path: str, wsdl_path: str):
+    def __init_from_config(self, config_path: str, timeout: int):
         with open(config_path, "r") as access_file:
             data = json.load(access_file)
             self.ip = data["ip"]
             self.port = data["port"]
             self.user = data["user"]
             self.password = data["password"]
-        self.__set_connection(wsdl_path)
+        self.__set_connection(timeout)
 
     
-    def __set_connection(self, wsdl_path: str):
-        if not wsdl_path is None:
-            self.cam = ONVIFCamera(self.ip, self.port, self.user, self.password, wsdl_path)
-            return
-        try:
-            self.cam = ONVIFCamera(self.ip, self.port, self.user, self.password, "/etc/onvif/wsdl/")
-        except exceptions.ONVIFError:
-            self.cam = ONVIFCamera(self.ip, self.port, self.user, self.password, os.path.join(glob.glob("venv/lib/python*")[0], "site-packages/wsdl") ) 
+    def __set_connection(self, timeout: int):
+        
+        wsdl_path = join(dirname(dirname(inspect.getfile(ONVIFCamera))), "wsdl")
+        self.cam = ONVIFCamera(self.ip, self.port, self.user, self.password, wsdl_path, transport=Transport(timeout=timeout))
 
         capabilities = self.getCapabilities()
         if capabilities["Device"]["XAddr"].find("192.168.") != -1:
