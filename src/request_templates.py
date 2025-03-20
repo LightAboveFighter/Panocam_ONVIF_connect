@@ -121,5 +121,10 @@ class AbsoluteMoveBlock(NeedsCameraSchema):
     speed = fields.Nested(SpeedTemplate, many=False, required=False, load_default=None)
 
 
+class RelativeMoveBlock(NeedsCameraSchema):
+    relative_position = fields.Nested(PositionTemplate, many=False, required=True)
+    speed = fields.Nested(SpeedTemplate, many=False, required=False, load_default=None)
+
+
 class GetLimitsBlock(NeedsCameraSchema):
     pass

@@ -96,6 +96,11 @@ class UserConnectionData:
                     "type": "Limits",
                     "block": chosen_camera.getLimits()
                 }
+            case "RelativeMove":
+                speed = Speed(**block["speed"]) if block.get("speed", False) else None
+                speed = speed or self.data[key]["default_values"]["speed"]
+                chosen_camera.relativeMove(Position(**block["relative_position"]), speed)
+                return None
             
 
 class Server:
