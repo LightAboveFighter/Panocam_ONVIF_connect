@@ -59,9 +59,13 @@ class UserConnectionData:
                         "position": Position(cam_request["PanTilt"]["x"], cam_request["PanTilt"]["y"], cam_request["Zoom"]["x"]).as_dict()
                     }
                 }
-            # case "SetHomePosition":
-            # case "MoveToHomePosition":
-            case "StopMoving":
+            case "SetHomePosition":
+                chosen_camera.setHomePosition()
+                return None
+            case "GotoHomePosition":
+                chosen_camera.gotoHomePosition()
+                return None
+            case "Stop":
                 chosen_camera.stop(block["stop_x_y"], block["stop_zoom"])
                 return None
             case "CloseConnection":
@@ -70,7 +74,10 @@ class UserConnectionData:
                 return None
             # case "GetRTSP":
             # case "GetAvailableCameras":
-            # case "AbsoluteMove":
+            case "AbsoluteMove":
+                speed = Speed(**block["speed"]) if not block["speed"] is None else None
+                chosen_camera.absoluteMove(Position(**block["position"]), speed)
+                return None
             case "GetLimits":
                 return {
                     "type": "Limits",
