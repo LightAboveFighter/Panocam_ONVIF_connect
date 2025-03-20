@@ -138,9 +138,15 @@ class Camera:
         else:   
             pass
 
-    # def absoluteMove(self, x: float, y: float, zoom: float, x_speed: float, y_speed: float, zoom_speed: float):
-
+    @__profile_token
+    @__ptz_service
+    def absoluteMove(self, x: float, y: float, zoom: float):
+        request = self.ptz_service.create_type("AbsoluteMove")
+        request.ProfileToken = self.profile_token
+        request.Position = {'PanTilt': {"x": x, "y": y}, 'Zoom': zoom}
+        return self.ptz_service.AbsoluteMove(request)
     
+    @__profile_token
     @__ptz_service
     def stop(self, stop_x_y: bool, stop_zoom: bool):
         request = self.ptz_service.create_type("Stop")
@@ -162,14 +168,20 @@ class Camera:
             "position_max": Position(tilt_ranges["XRange"]["Max"], tilt_ranges["XRange"]["Max"], ptz_config["ZoomLimits"]["Range"]["XRange"]["Max"]).as_dict()
         }
     
-    # @__ptz_service
-    # def gotoHomePosition(self):
-    #     return self.ptz_service.GotoHomePosition({'ProfileToken': self.profile_token})
+    @__profile_token
+    @__ptz_service
+    def gotoHomePosition(self):
+        request = self.ptz_service.create_type("GotoHomePosition")
+        request.ProfileToken = self.profile_token
+        return self.ptz_service.GotoHomePosition(request)
     
-    # @__ptz_service
-    # def setHomePosition(self):
-    #     """set active position as home"""
-    #     self.ptz_service.SetHomePosition({'ProfileToken': self.profile_token})
+    @__profile_token
+    @__ptz_service
+    def setHomePosition(self):
+        """set active position as home"""
+        request = self.ptz_service.create_type("SetHomePosition")
+        request.ProfileToken = self.profile_token
+        return self.ptz_service.SetHomePosition(request)
 
     def see_video(self, video_stream_link: str):
 
