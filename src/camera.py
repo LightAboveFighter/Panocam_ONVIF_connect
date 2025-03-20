@@ -53,6 +53,8 @@ class Camera:
                 url: re_sub(r'192\.168\.\d*\.\d*', self.ip+":"+str(self.port), addr) 
                 for url, addr in self.cam.xaddrs.items() 
                 }
+            
+    #wrappers
 
     def __media_service(func):
         def _wrapper(*args, **kwargs):
@@ -85,6 +87,8 @@ class Camera:
                 self.profile_token = self.getProfileToken()
             return func(*args, **kwargs)
         return _wrapper
+    
+    #get methods
 
     def getDeviceInformation(self):
         return self.cam.devicemgmt.GetDeviceInformation()
@@ -100,8 +104,6 @@ class Camera:
     
     @__media_service
     def getProfiles(self):
-        # if self.media_service is None:
-        #     self.media_service = self.cam.create_media_service()
         profiles = self.media_service.GetProfiles()
         if profiles is None:
             raise RuntimeError("Can't get profiles due to connection")
@@ -123,6 +125,38 @@ class Camera:
     
     def getPosition(self):
         return self.getPtzStatus().Position
+    
+    @__ptz_service
+    def getPTZConfiguration(self):
+        return self.getProfiles()[0].PTZConfiguration
+    
+    def getLimits(self):
+        ptz_config = self.getPTZConfiguration()
+        tilt_ranges = ptz_config["PanTiltLimits"]["Range"]
+        return {
+            "position_min": Position(tilt_ranges["XRange"]["Min"], tilt_ranges["XRange"]["Min"], ptz_config["ZoomLimits"]["Range"]["XRange"]["Min"]).as_dict(),
+            "position_max": Position(tilt_ranges["XRange"]["Max"], tilt_ranges["XRange"]["Max"], ptz_config["ZoomLimits"]["Range"]["XRange"]["Max"]).as_dict()
+        }
+    
+    # @__profile_token
+    # @__media_service
+    # def getRTSP(self):
+    #     request = self.media_service.create_type('GetStreamUri')
+    #     request.ProfileToken = self.profile_token
+    #     request.StreamSetup = {'Stream': 'RTP-Unicast', 'Transport': {'Protocol': 'RTSP'}}
+    #     print(type(self.media_service.GetStreamUri(request)["Uri"]))
+
+    #set methods
+
+    @__profile_token
+    @__ptz_service
+    def setHomePosition(self):
+        """set active position as home"""
+        request = self.ptz_service.create_type("SetHomePosition")
+        request.ProfileToken = self.profile_token
+        return self.ptz_service.SetHomePosition(request)
+    
+    #control methods
     
     @__profile_token
     @__ptz_service
@@ -174,18 +208,6 @@ class Camera:
 
         return self.ptz_service.Stop(request)
     
-    @__ptz_service
-    def getPTZConfiguration(self):
-        return self.getProfiles()[0].PTZConfiguration
-    
-    def getLimits(self):
-        ptz_config = self.getPTZConfiguration()
-        tilt_ranges = ptz_config["PanTiltLimits"]["Range"]
-        return {
-            "position_min": Position(tilt_ranges["XRange"]["Min"], tilt_ranges["XRange"]["Min"], ptz_config["ZoomLimits"]["Range"]["XRange"]["Min"]).as_dict(),
-            "position_max": Position(tilt_ranges["XRange"]["Max"], tilt_ranges["XRange"]["Max"], ptz_config["ZoomLimits"]["Range"]["XRange"]["Max"]).as_dict()
-        }
-    
     @__profile_token
     @__ptz_service
     def gotoHomePosition(self, speed: Speed = None):
@@ -197,21 +219,15 @@ class Camera:
 
         return self.ptz_service.GotoHomePosition(request)
     
-    @__profile_token
-    @__ptz_service
-    def setHomePosition(self):
-        """set active position as home"""
-        request = self.ptz_service.create_type("SetHomePosition")
-        request.ProfileToken = self.profile_token
-        return self.ptz_service.SetHomePosition(request)
+    def reboot(self):
+        return self.cam.devicemgmt.SystemReboot()
+    
+    #stream methods
 
     def see_video(self, video_stream_link: str):
-
+    
         vcap = VideoCapture(video_stream_link)
         while(1):
             success, frame = vcap.read()
             imshow('Camera_{self.ip}', frame)
             waitKey(1)
-
-    def reboot(self):
-        return self.cam.devicemgmt.SystemReboot()

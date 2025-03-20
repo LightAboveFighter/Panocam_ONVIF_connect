@@ -30,6 +30,9 @@ class UserConnectionData:
                     }
 
         match request_type:
+
+            #SET requests
+
             case "ConnectionRequest":
                 # for camera_params in block["cameras"]:
                 is_connected = True
@@ -49,6 +52,30 @@ class UserConnectionData:
             case "SetMoveSpeed":
                 self.data[key]["default_values"]["speed"] = Speed(**block["speed"])
                 return None
+            case "SetHomePosition":
+                chosen_camera.setHomePosition()
+                return None
+            
+            #GET requests
+
+            case "GetPosition":
+                cam_request = chosen_camera.getPosition()
+                return {
+                    "type": "Position",
+                    "block": {
+                        "position": Position(cam_request["PanTilt"]["x"], cam_request["PanTilt"]["y"], cam_request["Zoom"]["x"]).as_dict()
+                    }
+                }
+            case "GetLimits":
+                return {
+                    "type": "Limits",
+                    "block": chosen_camera.getLimits()
+                }
+            # case "GetRTSP":
+            # case "GetAvailableCameras":
+            
+            #CONTROL requests
+
             case "ContiniousMove":
                 speed = Speed(**block["speed"]) if block.get("speed", False) else None
                 speed = speed or self.data[key]["default_values"]["speed"]
@@ -62,16 +89,15 @@ class UserConnectionData:
 
                 chosen_camera.continiousMove(speed, duration=block["duration"])
                 return None
-            case "GetPosition":
-                cam_request = chosen_camera.getPosition()
-                return {
-                    "type": "Position",
-                    "block": {
-                        "position": Position(cam_request["PanTilt"]["x"], cam_request["PanTilt"]["y"], cam_request["Zoom"]["x"]).as_dict()
-                    }
-                }
-            case "SetHomePosition":
-                chosen_camera.setHomePosition()
+            case "AbsoluteMove":
+                speed = Speed(**block["speed"]) if block.get("speed", False) else None
+                speed = speed or self.data[key]["default_values"]["speed"]
+                chosen_camera.absoluteMove(Position(**block["position"]), speed)
+                return None
+            case "RelativeMove":
+                speed = Speed(**block["speed"]) if block.get("speed", False) else None
+                speed = speed or self.data[key]["default_values"]["speed"]
+                chosen_camera.relativeMove(Position(**block["relative_position"]), speed)
                 return None
             case "GotoHomePosition":
                 speed = Speed(**block["speed"]) if block.get("speed", False) else None
@@ -80,31 +106,17 @@ class UserConnectionData:
             case "Stop":
                 chosen_camera.stop(block["stop_x_y"], block["stop_zoom"])
                 return None
+            
+            #DELETE requests
+
             case "CloseConnection":
                 chosen_camera.stop(True, True)
                 self.cameras.pop(key)
                 return None
-            # case "GetRTSP":
-            # case "GetAvailableCameras":
-            case "AbsoluteMove":
-                speed = Speed(**block["speed"]) if block.get("speed", False) else None
-                speed = speed or self.data[key]["default_values"]["speed"]
-                chosen_camera.absoluteMove(Position(**block["position"]), speed)
-                return None
-            case "GetLimits":
-                return {
-                    "type": "Limits",
-                    "block": chosen_camera.getLimits()
-                }
-            case "RelativeMove":
-                speed = Speed(**block["speed"]) if block.get("speed", False) else None
-                speed = speed or self.data[key]["default_values"]["speed"]
-                chosen_camera.relativeMove(Position(**block["relative_position"]), speed)
-                return None
             
 
 class Server:
-
+    
     main_socket: socket
     connected_users: dict[str, UserConnectionData]
 
