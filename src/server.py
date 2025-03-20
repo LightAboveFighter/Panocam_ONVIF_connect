@@ -117,7 +117,7 @@ class Server:
             response = self.do_request(client[0], message.decode(encoding="utf-8"))
 
             if not response is None:
-                print(f"[SERVER]: {client[0]} ", response, flush=True)
+                print(f"[SERVER]: {client[0]} ", response, flush=flush)
                 self.main_socket.sendto(bytes(response, encoding="utf-8"), client)
 
     def do_request(self, user_ip: str, request: str):
