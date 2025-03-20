@@ -20,6 +20,9 @@ class Position:
 
     def as_dict(self):
         return asdict(self)
+    
+    def as_onvif_dict(self):
+        return {'PanTilt': {"x": self.x, "y": self.y}, 'Zoom': self.zoom}
 
 
 @dataclass
@@ -34,3 +37,6 @@ class Speed:
         
     def as_dict(self):
         return asdict(self)
+    
+    def as_onvif_dict(self):
+        return {'PanTilt': {"x": self.x_speed, "y": self.y_speed}, 'Zoom': self.zoom_speed}
