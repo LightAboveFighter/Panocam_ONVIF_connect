@@ -62,10 +62,10 @@ class UserConnectionData:
             # case "SetHomePosition":
             # case "MoveToHomePosition":
             case "StopMoving":
-                chosen_camera.stopMoving(block["stop_x_y"], block["stop_zoom"])
+                chosen_camera.stop(block["stop_x_y"], block["stop_zoom"])
                 return None
             case "CloseConnection":
-                chosen_camera.stopMoving(True, True)
+                chosen_camera.stop(True, True)
                 self.cameras.pop(key)
                 return None
             # case "GetRTSP":

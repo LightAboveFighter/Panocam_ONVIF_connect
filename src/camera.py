@@ -134,7 +134,7 @@ class Camera:
         
         if method_is_blocking:
             sleep(duration)
-            self.stopMoving(True, True)
+            self.stop(True, True)
         else:   
             pass
 
@@ -142,8 +142,13 @@ class Camera:
 
     
     @__ptz_service
-    def stopMoving(self, stop_x_y: bool, stop_zoom: bool):
-        self.ptz_service.Stop({'ProfileToken': self.profile_token, 'PanTilt': stop_x_y, 'Zoom': stop_zoom})
+    def stop(self, stop_x_y: bool, stop_zoom: bool):
+        request = self.ptz_service.create_type("Stop")
+        request.ProfileToken = self.profile_token
+        request.PanTilt = stop_x_y
+        request.Zoom = stop_zoom
+
+        self.ptz_service.Stop(request)
     
     @__ptz_service
     def getPTZConfiguration(self):
