@@ -126,14 +126,11 @@ class Camera:
     
     @__profile_token
     @__ptz_service
-    def continiousMove(self, x_speed = 0, y_speed = 0, zoom_speed = 0, duration = 0.5, method_is_blocking = True):
-        if (abs(x_speed) + abs(y_speed) + abs(zoom_speed)) == 0:
-            return
-        
+    def continiousMove(self, speed: Speed, duration = 0.5, method_is_blocking = True):
         request = self.ptz_service.create_type("ContinuousMove")
         request.ProfileToken = self.profile_token
 
-        request.Velocity = {'PanTilt': {"x": x_speed, "y": y_speed}, 'Zoom': zoom_speed}
+        request.Velocity = speed.as_onvif_dict()
 
         self.ptz_service.ContinuousMove(request)
         
@@ -145,10 +142,14 @@ class Camera:
 
     @__profile_token
     @__ptz_service
-    def absoluteMove(self, x: float, y: float, zoom: float):
+    def absoluteMove(self, position: Position, speed: Speed = None):
         request = self.ptz_service.create_type("AbsoluteMove")
         request.ProfileToken = self.profile_token
-        request.Position = {'PanTilt': {"x": x, "y": y}, 'Zoom': zoom}
+        request.Position = position.as_onvif_dict()  
+
+        if not speed is None:
+            request.Speed = speed.as_onvif_dict()
+
         return self.ptz_service.AbsoluteMove(request)
     
     @__profile_token
