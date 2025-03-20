@@ -33,7 +33,7 @@ class Speed:
 
     def __post_init__(self):
         if abs(self.x_speed) + abs(self.y_speed) + abs(self.zoom_speed) == 0:
-            raise TypeError("Non-positive Speed vector lenght.")
+            raise TypeError("Non-positive or zero Speed vector's lenght.")
         
     def as_dict(self):
         return asdict(self)
