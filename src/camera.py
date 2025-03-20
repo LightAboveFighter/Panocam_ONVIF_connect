@@ -117,7 +117,9 @@ class Camera:
     @__profile_token
     @__ptz_service
     def getPtzStatus(self):
-        return self.ptz_service.GetStatus({'ProfileToken': self.profile_token})
+        request = self.ptz_service.create_type("GetStatus")
+        request.ProfileToken = self.profile_token
+        return self.ptz_service.GetStatus(request)
     
     def getPosition(self):
         return self.getPtzStatus().Position
@@ -127,10 +129,13 @@ class Camera:
     def continiousMove(self, x_speed = 0, y_speed = 0, zoom_speed = 0, duration = 0.5, method_is_blocking = True):
         if (abs(x_speed) + abs(y_speed) + abs(zoom_speed)) == 0:
             return
+        
+        request = self.ptz_service.create_type("ContinuousMove")
+        request.ProfileToken = self.profile_token
 
-        self.ptz_service.ContinuousMove(
-            {'ProfileToken': self.profile_token, 'Velocity': {'PanTilt': {"x": x_speed, "y": y_speed}, 'Zoom': zoom_speed}}
-        )
+        request.Velocity = {'PanTilt': {"x": x_speed, "y": y_speed}, 'Zoom': zoom_speed}
+
+        self.ptz_service.ContinuousMove(request)
         
         if method_is_blocking:
             sleep(duration)
