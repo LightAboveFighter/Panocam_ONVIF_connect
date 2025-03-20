@@ -82,7 +82,7 @@ class Camera:
             self = args[0] if len(args) > 0 else kwargs["self"]
             assert isinstance(self, Camera)
             if self.profile_token is None:
-                self.profile_token = self.getProfiles()[0].token
+                self.profile_token = self.getProfileToken()
             return func(*args, **kwargs)
         return _wrapper
 
