@@ -160,7 +160,7 @@ class Camera:
         request.PanTilt = stop_x_y
         request.Zoom = stop_zoom
 
-        self.ptz_service.Stop(request)
+        return self.ptz_service.Stop(request)
     
     @__ptz_service
     def getPTZConfiguration(self):
