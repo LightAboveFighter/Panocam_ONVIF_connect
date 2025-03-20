@@ -41,12 +41,6 @@ class PositionTemplate(Schema):
     x = fields.Float(required=True)
     y = fields.Float(required=True)
     zoom = fields.Float(required=True)
-    
-    def __init__(self, x_default = 0, y_default = 0, zoom_default = 0, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["x"].load_default = float(x_default)
-        self.fields["y"].load_default = float(y_default)
-        self.fields["zoom"].load_default = float(zoom_default)
 
 
 class SpeedTemplate(Schema):
