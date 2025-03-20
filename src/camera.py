@@ -176,9 +176,13 @@ class Camera:
     
     @__profile_token
     @__ptz_service
-    def gotoHomePosition(self):
+    def gotoHomePosition(self, speed: Speed = None):
         request = self.ptz_service.create_type("GotoHomePosition")
         request.ProfileToken = self.profile_token
+
+        if not speed is None:
+            request.Speed = speed.as_onvif_dict()
+
         return self.ptz_service.GotoHomePosition(request)
     
     @__profile_token
