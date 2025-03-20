@@ -15,7 +15,7 @@ class UserConnectionData:
 
     def __init__(self):
         self.cameras = {}
-        self.data = {"default_values": {}, "default_speed": {}}
+        self.data = {}
 
     def do_request(self, request_type: str, block: dict):
         
@@ -35,6 +35,7 @@ class UserConnectionData:
                 is_connected = True
                 try:
                     self.cameras[CameraName(**block["camera_name"]).as_key()] = Camera(**block["camera_name"], user=block["user"], password=block["password"])
+                    self.data[CameraName(**block["camera_name"]).as_key()] = {"default_values": {"speed": None}}
                 except RuntimeError:
                     is_connected = False
 
@@ -46,10 +47,20 @@ class UserConnectionData:
                     }
                 }
             case "SetMoveSpeed":
-                self.data["default_values"]["default_speed"][key] = Speed(**block["speed"])
+                self.data[key]["default_values"]["speed"] = Speed(**block["speed"])
                 return None
             case "ContiniousMove":
-                chosen_camera.move_zoom(**block["speed"], duration=block["duration"])
+                speed = Speed(**block["speed"]) if block.get("speed", False) else None
+                speed = speed or self.data[key]["default_values"]["speed"]
+
+                if speed is None:
+                    return {
+                        "block": {
+                            "speed": ["No default values were specified."]
+                        }
+                    }
+
+                chosen_camera.move_zoom(speed, duration=block["duration"])
                 return None
             case "GetPosition":
                 cam_request = chosen_camera.getPosition()
@@ -63,7 +74,8 @@ class UserConnectionData:
                 chosen_camera.setHomePosition()
                 return None
             case "GotoHomePosition":
-                chosen_camera.gotoHomePosition()
+                speed = Speed(**block["speed"]) if block.get("speed", False) else None
+                chosen_camera.gotoHomePosition(speed)
                 return None
             case "Stop":
                 chosen_camera.stop(block["stop_x_y"], block["stop_zoom"])
@@ -75,7 +87,8 @@ class UserConnectionData:
             # case "GetRTSP":
             # case "GetAvailableCameras":
             case "AbsoluteMove":
-                speed = Speed(**block["speed"]) if not block["speed"] is None else None
+                speed = Speed(**block["speed"]) if block.get("speed", False) else None
+                speed = speed or self.data[key]["default_values"]["speed"]
                 chosen_camera.absoluteMove(Position(**block["position"]), speed)
                 return None
             case "GetLimits":

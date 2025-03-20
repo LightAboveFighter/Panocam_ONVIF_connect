@@ -79,7 +79,7 @@ class SetMoveSpeedBlock(NeedsCameraSchema):
 
 class ContiniousMoveBlock(NeedsCameraSchema):
     duration = fields.Float(required=True, validate=Range(min=0))
-    speed = fields.Nested(SpeedTemplate, many=False, required=True)
+    speed = fields.Nested(SpeedTemplate, many=False, required=False, load_default=None)
 
     # def __init__(self, x_default = 0, y_default = 0, zoom_default = 0, *args, **kwargs):
     #     self.default_speed = (x_default, y_default, zoom_default)
