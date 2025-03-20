@@ -103,11 +103,12 @@ class GetPositionBlock(NeedsCameraSchema):
 
 
 class SetHomePositionBlock(NeedsCameraSchema):
-    position = fields.Nested(PositionTemplate, many=False, required=True)
+    pass
 
-# class MoveToHomePositionBlock(Schema):
+
+class GotoHomePositionBlock(NeedsCameraSchema):
+    speed = fields.Nested(SpeedTemplate, many=False, required=False, load_default=None)
     
-# class CloseConnectionBlock(Schema):
 
 class CloseConnectionBlock(NeedsCameraSchema):
     pass
@@ -116,14 +117,14 @@ class CloseConnectionBlock(NeedsCameraSchema):
 
 # class GetAvailableCamerasBlock(Schema):
 
-class StopMovingBlock(NeedsCameraSchema):
+class StopBlock(NeedsCameraSchema):
     stop_x_y = fields.Bool()
     stop_zoom = fields.Bool()
 
 
 class AbsoluteMoveBlock(NeedsCameraSchema):
     position = fields.Nested(PositionTemplate, many=False, required=True)
-    speed = fields.Nested(SpeedTemplate, many=False, required=True)
+    speed = fields.Nested(SpeedTemplate, many=False, required=False, load_default=None)
 
 
 class GetLimitsBlock(NeedsCameraSchema):
