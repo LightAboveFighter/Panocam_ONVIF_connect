@@ -154,6 +154,18 @@ class Camera:
     
     @__profile_token
     @__ptz_service
+    def relativeMove(self, relative_position: Position, speed: Speed = None):
+        request = self.ptz_service.create_type("RelativeMove")
+        request.ProfileToken = self.profile_token
+        request.Translation = relative_position.as_onvif_dict()
+        
+        if not speed is None:
+            request.Speed = speed.as_onvif_dict()
+        
+        return self.ptz_service.RelativeMove(request)
+    
+    @__profile_token
+    @__ptz_service
     def stop(self, stop_x_y: bool, stop_zoom: bool):
         request = self.ptz_service.create_type("Stop")
         request.ProfileToken = self.profile_token
