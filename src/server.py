@@ -60,7 +60,7 @@ class UserConnectionData:
                         }
                     }
 
-                chosen_camera.move_zoom(speed, duration=block["duration"])
+                chosen_camera.continiousMove(speed, duration=block["duration"])
                 return None
             case "GetPosition":
                 cam_request = chosen_camera.getPosition()
