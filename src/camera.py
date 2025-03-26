@@ -7,7 +7,7 @@ from zeep.transports import Transport
 from os.path import dirname, join
 from inspect import getfile
 from re import sub as re_sub
-from structures import Position
+from structures import Position, Speed
 
 
 class Camera:
@@ -223,6 +223,10 @@ class Camera:
         return self.cam.devicemgmt.SystemReboot()
     
     #stream methods
+
+    @staticmethod
+    def get_video_stream(video_stream_link: str) -> VideoCapture:
+        return VideoCapture(video_stream_link)
 
     @staticmethod
     def see_video(video_stream_link: str):
