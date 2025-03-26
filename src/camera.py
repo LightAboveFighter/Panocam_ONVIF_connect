@@ -1,6 +1,6 @@
 from onvif import ONVIFCamera, ONVIFService
 from onvif.exceptions import ONVIFError
-from cv2 import VideoCapture, imshow, waitKey
+from cv2 import VideoCapture, imshow, waitKey, resize
 from json import load as json_load
 from time import sleep
 from zeep.transports import Transport
@@ -229,10 +229,11 @@ class Camera:
         return VideoCapture(video_stream_link)
 
     @staticmethod
-    def see_video(video_stream_link: str):
+    def see_video(video_stream_link: str, frame_size: tuple = None):
     
         vcap = VideoCapture(video_stream_link)
         while(1):
             success, frame = vcap.read()
-            imshow(video_stream_link, resize(frame, (1620, 800)))
+            frame = frame if frame_size is None else resize(frame, frame_size)
+            imshow(video_stream_link, frame)
             waitKey(1)
