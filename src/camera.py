@@ -224,10 +224,11 @@ class Camera:
     
     #stream methods
 
-    def see_video(self, video_stream_link: str):
+    @staticmethod
+    def see_video(video_stream_link: str):
     
         vcap = VideoCapture(video_stream_link)
         while(1):
             success, frame = vcap.read()
-            imshow('Camera_{self.ip}', frame)
+            imshow(video_stream_link, resize(frame, (1620, 800)))
             waitKey(1)
