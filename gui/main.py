@@ -10,6 +10,7 @@ import main_window as main_window
 import dialog_window as dialog_window
 import text_window as text_window
 from camera import Camera
+from video_window import VideoCaptureWidget
 
 
 class UserInput(QtWidgets.QMainWindow, text_window.Ui_MainWindow):
@@ -23,13 +24,15 @@ class UserInput(QtWidgets.QMainWindow, text_window.Ui_MainWindow):
         password = self.textEdit_2.toPlainText()
         port = self.textEdit_3.toPlainText()
         ip = self.textEdit_4.toPlainText()
-        try:
-            cam = Camera(ip, port, login, password, "C:/Users/aggz1/MPTI Informatics/Sesestr4/cringeprak/Panocam_ONVIF_connect/venv/lib/python3.10/site-packages/wsdl")
-            print("Connection successful")
-            cam.see_video('rtsp://falt:panofalt1234@77.232.155.123:556')
-            cam.get_video_stream('rtsp://falt:panofalt1234@77.232.155.123:556')
-        except:
-            print("Connection error")
+        
+        # try:
+        #     cam = Camera(ip, port, login, password)
+        #     print("Connection successful")
+        #     # cam.see_video('rtsp://falt:panofalt1234@77.232.155.123:556')
+        #     video_window = cam.VideoCaptureWidget(cam.get_video_stream('rtsp://falt:panofalt1234@77.232.155.123:556'))
+        #     video_window.show()
+        # except:
+        #     print("Connection error")
 
 
 class CameraDialog(QtWidgets.QMainWindow, dialog_window.Ui_MainWindow):

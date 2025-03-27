@@ -7,10 +7,10 @@ from PyQt6.QtCore import QTimer
 from camera import Camera
 
 class VideoCaptureWidget(QWidget):
-    def __init__(self):
+    def __init__(self, stream):
         super().__init__()
 
-        self.video_capture = cv2.VideoCapture(0)
+        self.video_capture = stream
         if not self.video_capture.isOpened():
             print("Cannot open camera")
             exit()
