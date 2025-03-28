@@ -4,13 +4,13 @@ import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QWidget, QVBoxLayout
 
 import main_window as main_window
 import dialog_window as dialog_window
 import text_window as text_window
 from camera import Camera
-from video_window import VideoCaptureWidget
+from video_capture_widget import VideoCaptureWidget
 
 
 class UserInput(QtWidgets.QMainWindow, text_window.Ui_MainWindow):
@@ -24,15 +24,24 @@ class UserInput(QtWidgets.QMainWindow, text_window.Ui_MainWindow):
         password = self.textEdit_2.toPlainText()
         port = self.textEdit_3.toPlainText()
         ip = self.textEdit_4.toPlainText()
-        
+
         # try:
         #     cam = Camera(ip, port, login, password)
         #     print("Connection successful")
         #     # cam.see_video('rtsp://falt:panofalt1234@77.232.155.123:556')
-        #     video_window = cam.VideoCaptureWidget(cam.get_video_stream('rtsp://falt:panofalt1234@77.232.155.123:556'))
+        #     video_window = VideoCaptureWidget(cam.get_video_stream('rtsp://falt:panofalt1234@77.232.155.123:556'))
         #     video_window.show()
         # except:
         #     print("Connection error")
+
+        cam = Camera(ip, port, login, password)
+        rtsp_url = 'rtsp://falt:panofalt1234@77.232.155.123:559'
+        cv_stream = cam.get_video_stream(rtsp_url)
+        if cv_stream is None or not cv_stream.isOpened():
+            raise Exception(f"Error opening RTSP stream: {rtsp_url}")
+
+        self.video_window = VideoCaptureWidget(cv_stream)
+        self.video_window.show()
 
 
 class CameraDialog(QtWidgets.QMainWindow, dialog_window.Ui_MainWindow):
