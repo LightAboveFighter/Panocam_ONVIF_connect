@@ -39,8 +39,15 @@ class UserInput(QtWidgets.QMainWindow, text_window.Ui_MainWindow):
         cv_stream = cam.get_video_stream(rtsp_url)
         if cv_stream is None or not cv_stream.isOpened():
             raise Exception(f"Error opening RTSP stream: {rtsp_url}")
+        
+        connection_info = {
+               "ip": ip,
+                "port": port,
+                "login": login,
+                "rtsp": 'rtsp://falt:panofalt1234@77.232.155.123:559'
+             }
 
-        self.video_window = VideoCaptureWidget(cv_stream)
+        self.video_window = VideoCaptureWidget(cv_stream, connection_info=connection_info)
         self.video_window.show()
 
 
