@@ -24,18 +24,9 @@ class UserInput(QtWidgets.QMainWindow, text_window.Ui_MainWindow):
         password = self.textEdit_2.toPlainText()
         port = self.textEdit_3.toPlainText()
         ip = self.textEdit_4.toPlainText()
-
-        # try:
-        #     cam = Camera(ip, port, login, password)
-        #     print("Connection successful")
-        #     # cam.see_video('rtsp://falt:panofalt1234@77.232.155.123:556')
-        #     video_window = VideoCaptureWidget(cam.get_video_stream('rtsp://falt:panofalt1234@77.232.155.123:556'))
-        #     video_window.show()
-        # except:
-        #     print("Connection error")
+        rtsp_url = self.textEdit_5.toPlainText()
 
         cam = Camera(ip, port, login, password)
-        rtsp_url = 'rtsp://falt:panofalt1234@77.232.155.123:559'
         cv_stream = cam.get_video_stream(rtsp_url)
         if cv_stream is None or not cv_stream.isOpened():
             raise Exception(f"Error opening RTSP stream: {rtsp_url}")
@@ -44,7 +35,7 @@ class UserInput(QtWidgets.QMainWindow, text_window.Ui_MainWindow):
                "ip": ip,
                 "port": port,
                 "login": login,
-                "rtsp": 'rtsp://falt:panofalt1234@77.232.155.123:559'
+                "rtsp": rtsp_url
              }
 
         self.video_window = VideoCaptureWidget(cv_stream, connection_info=connection_info)
@@ -70,12 +61,29 @@ class CameraDialog(QtWidgets.QMainWindow, dialog_window.Ui_MainWindow):
         with open(filepath) as file:
             json_data = file.read()
             data = json.loads(json_data)
-            try:
-                cam = Camera(data["ip"], data["port"], data["user"], data["password"], "C:/Users/aggz1/MPTI Informatics/Sesestr4/cringeprak/Panocam_ONVIF_connect/venv/lib/python3.10/site-packages/wsdl")
-                print("Connection successful")
-                cam.see_video('rtsp://falt:panofalt1234@77.232.155.123:556')
-            except:
-                print("Connection error")
+
+            login = data["user"]
+            password = data["password"]
+            port = data["port"]
+            ip = data["ip"]
+            rtsp_url = data["rtsp_url"]
+
+            cam = Camera(ip, port, login, password)
+            cv_stream = cam.get_video_stream(rtsp_url)
+            if cv_stream is None or not cv_stream.isOpened():
+                raise Exception(f"Error opening RTSP stream: {rtsp_url}")
+            
+            connection_info = {
+                "ip": ip,
+                "port": port,
+                "login": login,
+                "rtsp": rtsp_url
+                }
+
+            self.video_window = VideoCaptureWidget(cv_stream, connection_info=connection_info)
+            self.video_window.show()
+
+            
 
 
 class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):

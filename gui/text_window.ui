@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>470</width>
-    <height>282</height>
+    <height>572</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <x>10</x>
       <y>10</y>
       <width>451</width>
-      <height>171</height>
+      <height>465</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout">
@@ -84,13 +84,28 @@
        </property>
       </widget>
      </item>
+     <item row="4" column="1">
+      <widget class="QTextEdit" name="textEdit_5"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>RTSP:</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
       <x>350</x>
-      <y>190</y>
+      <y>480</y>
       <width>101</width>
       <height>31</height>
      </rect>
