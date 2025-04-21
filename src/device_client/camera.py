@@ -7,13 +7,73 @@ from zeep.transports import Transport
 from os.path import dirname, join
 from inspect import getfile
 from re import sub as re_sub
+
+import sys
+import os
+
+# Get the directory of the current file (camera.py)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Add the parent directory to sys.path
+parent_dir = os.path.abspath(os.path.join(current_dir, '..')) # Go up one level
+sys.path.insert(0, parent_dir) # Insert at the beginning to prioritize
+
+
+# from structures import Position, Speed 
+
+# ... rest of your camera.py code
+
+
 from structures import Position, Speed
 
 
+class CameraException(Exception):
+    def __init__(self, onvif_err: ONVIFError = None, message: str = None, code: str = None):
+
+        if not message is None:
+            self.message = message
+            self.code = code or "User_code"
+            return
+
+        onvif_msg = onvif_err.reason
+        path_pos = onvif_msg.find("No such file:")
+        if (path_pos != -1 and onvif_msg.endswith("devicemgmt.wsdl")):
+            self.code = "wsdl_path"
+            self.message = "Incorrect path for wsdl directory: " + onvif_msg[path_pos + len("No such file:"):]
+            return
+        
+        self.code = "Unknown error"
+        self.message = onvif_msg.replace("Unknown error: ", "")
+    
+    def normalized_messages(self):
+        return {self.code: self.message}
+
+
+# def onvif_error_intercept(function):
+#     def __wrapper__(*args, **kwargs):
+#         try:
+#             result = function(*args, **kwargs)
+#         except ONVIFError as err:
+#             raise CameraException(err)
+#         return result
+
+#     return __wrapper__
+
+# def decorate_all_class_methods(decorator):
+# 	def decorate(cls):
+# 		for attr in cls.__bases__[0].__dict__:
+# 			if callable(getattr(cls, attr)) and not attr.startswith('_'):
+# 				setattr(cls, attr, decorator(getattr(cls, attr)))
+# 		return cls
+# 	return decorate
+
+# @decorate_all_class_methods(onvif_error_intercept)
 class Camera:
     cam: ONVIFCamera
     media_service: ONVIFService | None
     ptz_service: ONVIFService | None
+
+    #init methods
 
     def __init__(self, ip: str, port: int, user: str, password: str, config_path = None, timeout: int = 1):
         """
@@ -237,3 +297,50 @@ class Camera:
             frame = frame if frame_size is None else resize(frame, frame_size)
             imshow(video_stream_link, frame)
             waitKey(1)
+
+    def getDNS(self):
+        return self.cam.devicemgmt.GetDNS()
+    
+
+# cam = Camera("77.232.155.123", 16455, "falt", "panofalt1234")
+
+# cam = Camera("77.232.155.123", 16068, "falt", "panofalt1234")
+# print(cam.getProfiles())
+# print(cam.getRTSP())
+# # print(cam.setHomePosition())
+# print(cam.gotoHomePosition(Speed(0.1, 0.1, 0.1)))
+
+# for i in range(-10, 11):
+#     x = i/10
+#     cam.absoluteMove(Position(x, 0, 0))
+#     sleep(5)
+#     print(f"{x=}", cam.getPosition()["PanTilt"]["x"])
+# for i in range(-10, 11):
+#     y = i/10
+#     cam.absoluteMove(Position(0, y, 0))
+#     sleep(5)
+#     print(f"{y=}", cam.getPosition()["PanTilt"]["y"])
+# for i in range(0, 11):
+#     z = i/10
+#     cam.absoluteMove(Position(0, 0, z))
+#     sleep(5)
+#     print(f"{z=}", cam.getPosition()["Zoom"]["x"])
+# cam.absoluteMove(Position(1, 1, 1))
+# sleep(5)
+# print(cam.getPosition())
+# print(cam.setHomePosition())
+# print(cam.absoluteMove(Position(-0.48, -0.93, 0)))
+# print(cam.absoluteMove(Position(0.48, 0.93, 0), Speed(0.1, 0.1, 0.1)))
+# print(cam.absoluteMove(Position(-0.52, 0.98, 0.15)))
+# print(cam.getCapabilities())
+# print(cam.getDeviceInformation())
+# print(cam.continiousMove(Speed(-1, 0, 0), 10))
+# cam.see_video("rtsp://falt:panofalt1234@77.232.155.123:556")
+# cam.see_video("rtsp://falt:panofalt1234@77.232.155.123:559")
+# 0, -0.4722, 0.03  -  180.0, 95.0, 1.0
+# -1, -1, 0.03  -  0., 0., 1.0
+
+# Zoom 0.03 - 1.0   -   1.0 - 33.0
+# X    -1   - 1     -   0.  - 359
+# Y     0   - 1     -   95.  - -18
+# print(cam.getDNS())

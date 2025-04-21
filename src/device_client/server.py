@@ -1,6 +1,8 @@
-from socket import AF_INET, SOCK_DGRAM, socket
+from socket import AF_INET, SOCK_DGRAM, socket, setdefaulttimeout
 from json import dumps as json_dumps
 from json.decoder import JSONDecodeError
+
+import onvif.client
 from camera import Camera
 from request_templates import RequestBody, implemented_types
 from marshmallow import Schema
@@ -170,7 +172,7 @@ class Server:
         if not response is None:
             response = json_dumps(response)
         
-        # для каждого запроса без отдельного ответа - возвращаем сообщение о выполнении данного запроса
+        # for every request without any special responses return standart answer
         else:
             response = json_dumps(
                 {
@@ -178,6 +180,3 @@ class Server:
                 }
             )
         return response
-    
-server = Server()
-server.run()
