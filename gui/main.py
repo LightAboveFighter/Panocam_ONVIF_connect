@@ -84,8 +84,6 @@ class CameraDialog(QtWidgets.QMainWindow, dialog_window.Ui_MainWindow):
             self.video_window.show()
 
             
-
-
 class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
     def __init__(self):
         super().__init__()
