@@ -161,6 +161,7 @@ class Camera:
     @__profile_token
     @__ptz_service
     def continiousMove(self, speed: Speed, duration = 0.5, method_is_blocking = True):
+        print("Hello from continious move!")
         request = self.ptz_service.create_type("ContinuousMove")
         request.ProfileToken = self.profile_token
 

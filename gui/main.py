@@ -38,7 +38,7 @@ class UserInput(QtWidgets.QMainWindow, text_window.Ui_MainWindow):
                 "rtsp": rtsp_url
              }
 
-        self.video_window = VideoCaptureWidget(cv_stream, connection_info=connection_info)
+        self.video_window = VideoCaptureWidget(cv_stream, connection_info=connection_info, camera=cam)
         self.video_window.show()
 
 
@@ -80,7 +80,7 @@ class CameraDialog(QtWidgets.QMainWindow, dialog_window.Ui_MainWindow):
                 "rtsp": rtsp_url
                 }
 
-            self.video_window = VideoCaptureWidget(cv_stream, connection_info=connection_info)
+            self.video_window = VideoCaptureWidget(cv_stream, connection_info=connection_info, camera=cam)
             self.video_window.show()
 
             
