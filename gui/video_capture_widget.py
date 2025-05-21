@@ -37,6 +37,7 @@ class VideoCaptureWidget(QWidget):
         self.video_capture = cv_stream
         self.video_size = video_size
         self.connection_info = connection_info
+        print("cam from video_widget:", camera)
         self.camera = camera
 
         if not self.video_capture.isOpened():
@@ -116,6 +117,7 @@ class VideoCaptureWidget(QWidget):
         return controls_layout
 
     def _start_movement(self):
+        print("UUUUP")
         sender = self.sender()
 
         if sender == self.btn_up:
@@ -129,9 +131,12 @@ class VideoCaptureWidget(QWidget):
         else:
             return
 
+        print(self.camera)
         if self.camera:
             try:
-                self.camera.continuousMove(speed, method_is_blocking=False)
+                print("self.camera:")
+                print(self.camera.getDeviceInformation)
+                self.camera.continiousMove(speed, method_is_blocking=False)
             except ONVIFError as e:
                 print(f"PTZ Error: {str(e)}")
 
