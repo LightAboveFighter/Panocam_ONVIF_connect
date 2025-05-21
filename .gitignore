@@ -1,2 +1,7 @@
 venv
-access_file.json
+camera_config.json
+.vscode
+__pycache__
+sandbox
+output_files
+GUI

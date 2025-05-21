@@ -1,5 +1,11 @@
 import sys
-sys.path.insert(1, 'C:/Users/aggz1/MPTI Informatics/Sesestr4/cringeprak/Panocam_ONVIF_connect/src')
+import os
+
+current_file_path = os.path.abspath(__file__)
+current_dir = os.path.dirname(current_file_path)
+project_src_path = os.path.abspath(os.path.join(current_dir, "..", "src"))
+sys.path.insert(0, project_src_path)
+
 import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets

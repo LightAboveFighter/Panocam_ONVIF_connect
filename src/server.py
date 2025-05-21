@@ -1,4 +1,5 @@
 from socket import AF_INET, SOCK_DGRAM, socket
+from socket import AF_INET, SOCK_DGRAM, socket
 from json import dumps as json_dumps
 from json.decoder import JSONDecodeError
 from camera import Camera
