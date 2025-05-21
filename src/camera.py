@@ -15,11 +15,11 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Add the parent directory to sys.path
-parent_dir = os.path.abspath(os.path.join(current_dir, '..')) # Go up one level
-sys.path.insert(0, parent_dir) # Insert at the beginning to prioritize
+parent_dir = os.path.abspath(os.path.join(current_dir, ".."))  # Go up one level
+sys.path.insert(0, parent_dir)  # Insert at the beginning to prioritize
 
 
-# from structures import Position, Speed 
+# from structures import Position, Speed
 
 # ... rest of your camera.py code
 
@@ -27,55 +27,23 @@ sys.path.insert(0, parent_dir) # Insert at the beginning to prioritize
 from structures import Position, Speed
 
 
-class CameraException(Exception):
-    def __init__(self, onvif_err: ONVIFError = None, message: str = None, code: str = None):
-
-        if not message is None:
-            self.message = message
-            self.code = code or "User_code"
-            return
-
-        onvif_msg = onvif_err.reason
-        path_pos = onvif_msg.find("No such file:")
-        if (path_pos != -1 and onvif_msg.endswith("devicemgmt.wsdl")):
-            self.code = "wsdl_path"
-            self.message = "Incorrect path for wsdl directory: " + onvif_msg[path_pos + len("No such file:"):]
-            return
-        
-        self.code = "Unknown error"
-        self.message = onvif_msg.replace("Unknown error: ", "")
-    
-    def normalized_messages(self):
-        return {self.code: self.message}
-
-
-# def onvif_error_intercept(function):
-#     def __wrapper__(*args, **kwargs):
-#         try:
-#             result = function(*args, **kwargs)
-#         except ONVIFError as err:
-#             raise CameraException(err)
-#         return result
-
-#     return __wrapper__
-
-# def decorate_all_class_methods(decorator):
-# 	def decorate(cls):
-# 		for attr in cls.__bases__[0].__dict__:
-# 			if callable(getattr(cls, attr)) and not attr.startswith('_'):
-# 				setattr(cls, attr, decorator(getattr(cls, attr)))
-# 		return cls
-# 	return decorate
-
 # @decorate_all_class_methods(onvif_error_intercept)
 class Camera:
     cam: ONVIFCamera
     media_service: ONVIFService | None
     ptz_service: ONVIFService | None
 
-    #init methods
+    # init methods
 
-    def __init__(self, ip: str, port: int, user: str, password: str, config_path = None, timeout: int = 1):
+    def __init__(
+        self,
+        ip: str,
+        port: int,
+        user: str,
+        password: str,
+        config_path=None,
+        timeout: int = 1,
+    ):
         """
         config_path - if you want initialization from config file
         """
@@ -101,20 +69,26 @@ class Camera:
             self.password = data["password"]
         self.__set_connection(timeout)
 
-    
     def __set_connection(self, timeout: int):
-        
+
         wsdl_path = join(dirname(dirname(getfile(ONVIFCamera))), "wsdl")
-        self.cam = ONVIFCamera(self.ip, self.port, self.user, self.password, wsdl_path, transport=Transport(timeout=timeout))
+        self.cam = ONVIFCamera(
+            self.ip,
+            self.port,
+            self.user,
+            self.password,
+            wsdl_path,
+            transport=Transport(timeout=timeout),
+        )
 
         capabilities = self.getCapabilities()
         if capabilities["Device"]["XAddr"].find("192.168.") != -1:
-            self.cam.xaddrs = { 
-                url: re_sub(r'192\.168\.\d*\.\d*', self.ip+":"+str(self.port), addr) 
-                for url, addr in self.cam.xaddrs.items() 
-                }
-            
-    #wrappers
+            self.cam.xaddrs = {
+                url: re_sub(r"192\.168\.\d*\.\d*", self.ip + ":" + str(self.port), addr)
+                for url, addr in self.cam.xaddrs.items()
+            }
+
+    # wrappers
 
     def __media_service(func):
         def _wrapper(*args, **kwargs):
@@ -125,8 +99,8 @@ class Camera:
                 if self.media_service is None:
                     raise RuntimeError("Can't create media service due to connection")
             return func(*args, **kwargs)
+
         return _wrapper
-    
 
     def __ptz_service(func):
         def _wrapper(*args, **kwargs):
@@ -137,6 +111,7 @@ class Camera:
                 if self.ptz_service is None:
                     raise RuntimeError("Can't create ptz service due to connection")
             return func(*args, **kwargs)
+
         return _wrapper
 
     def __profile_token(func):
@@ -146,58 +121,67 @@ class Camera:
             if self.profile_token is None:
                 self.profile_token = self.getProfileToken()
             return func(*args, **kwargs)
+
         return _wrapper
-    
-    #get methods
+
+    # get methods
 
     def getDeviceInformation(self):
         return self.cam.devicemgmt.GetDeviceInformation()
-    
+
     def getHostname(self):
         return self.cam.devicemgmt.GetHostname()
 
     def getCapabilities(self):
         return self.cam.devicemgmt.GetCapabilities()
-    
+
     def getServices(self):
         return self.cam.devicemgmt.GetServices({"IncludeCapability": True})
-    
+
     @__media_service
     def getProfiles(self):
         profiles = self.media_service.GetProfiles()
         if profiles is None:
             raise RuntimeError("Can't get profiles due to connection")
         return profiles
-    
+
     @__ptz_service
     def getPtzCapabilities(self):
         return self.ptz_service.GetServiceCapabilities()
-    
+
     def getProfileToken(self):
         return self.getProfiles()[0].token
-    
+
     @__profile_token
     @__ptz_service
     def getPtzStatus(self):
         request = self.ptz_service.create_type("GetStatus")
         request.ProfileToken = self.profile_token
         return self.ptz_service.GetStatus(request)
-    
+
     def getPosition(self):
         return self.getPtzStatus().Position
-    
+
     @__ptz_service
     def getPTZConfiguration(self):
         return self.getProfiles()[0].PTZConfiguration
-    
+
     def getLimits(self):
         ptz_config = self.getPTZConfiguration()
         tilt_ranges = ptz_config["PanTiltLimits"]["Range"]
         return {
-            "position_min": Position(tilt_ranges["XRange"]["Min"], tilt_ranges["XRange"]["Min"], ptz_config["ZoomLimits"]["Range"]["XRange"]["Min"]).as_dict(),
-            "position_max": Position(tilt_ranges["XRange"]["Max"], tilt_ranges["XRange"]["Max"], ptz_config["ZoomLimits"]["Range"]["XRange"]["Max"]).as_dict()
+            "position_min": Position(
+                tilt_ranges["XRange"]["Min"],
+                tilt_ranges["XRange"]["Min"],
+                ptz_config["ZoomLimits"]["Range"]["XRange"]["Min"],
+            ).as_dict(),
+            "position_max": Position(
+                tilt_ranges["XRange"]["Max"],
+                tilt_ranges["XRange"]["Max"],
+                ptz_config["ZoomLimits"]["Range"]["XRange"]["Max"],
+            ).as_dict(),
         }
-    
+
     # @__profile_token
     # @__media_service
     # def getRTSP(self):
@@ -206,7 +190,7 @@ class Camera:
     #     request.StreamSetup = {'Stream': 'RTP-Unicast', 'Transport': {'Protocol': 'RTSP'}}
     #     print(type(self.media_service.GetStreamUri(request)["Uri"]))
 
-    #set methods
+    # set methods
 
     @__profile_token
     @__ptz_service
@@ -215,12 +199,12 @@ class Camera:
         request = self.ptz_service.create_type("SetHomePosition")
         request.ProfileToken = self.profile_token
         return self.ptz_service.SetHomePosition(request)
-    
-    #control methods
-    
+
+    # control methods
+
     @__profile_token
     @__ptz_service
-    def continiousMove(self, speed: Speed, duration = 0.5, method_is_blocking = True):
+    def continiousMove(self, speed: Speed, duration=0.5, method_is_blocking=True):
         print("Hello from continious move!")
         request = self.ptz_service.create_type("ContinuousMove")
         request.ProfileToken = self.profile_token
@@ -228,11 +212,11 @@ class Camera:
         request.Velocity = speed.as_onvif_dict()
 
         self.ptz_service.ContinuousMove(request)
-        
+
         if method_is_blocking:
             sleep(duration)
             self.stop(True, True)
-        else:   
+        else:
             pass
 
     @__profile_token
@@ -240,25 +224,25 @@ class Camera:
     def absoluteMove(self, position: Position, speed: Speed = None):
         request = self.ptz_service.create_type("AbsoluteMove")
         request.ProfileToken = self.profile_token
-        request.Position = position.as_onvif_dict()  
+        request.Position = position.as_onvif_dict()
 
         if not speed is None:
             request.Speed = speed.as_onvif_dict()
 
         return self.ptz_service.AbsoluteMove(request)
-    
+
     @__profile_token
     @__ptz_service
     def relativeMove(self, relative_position: Position, speed: Speed = None):
         request = self.ptz_service.create_type("RelativeMove")
         request.ProfileToken = self.profile_token
         request.Translation = relative_position.as_onvif_dict()
-        
+
         if not speed is None:
             request.Speed = speed.as_onvif_dict()
-        
+
         return self.ptz_service.RelativeMove(request)
-    
+
     @__profile_token
     @__ptz_service
     def stop(self, stop_x_y: bool, stop_zoom: bool):
@@ -268,7 +252,7 @@ class Camera:
         request.Zoom = stop_zoom
 
         return self.ptz_service.Stop(request)
-    
+
     @__profile_token
     @__ptz_service
     def gotoHomePosition(self, speed: Speed = None):
@@ -279,11 +263,11 @@ class Camera:
             request.Speed = speed.as_onvif_dict()
 
         return self.ptz_service.GotoHomePosition(request)
-    
+
     def reboot(self):
         return self.cam.devicemgmt.SystemReboot()
-    
-    #stream methods
+
+    # stream methods
 
     @staticmethod
     def get_video_stream(video_stream_link: str) -> VideoCapture:
@@ -291,9 +275,9 @@ class Camera:
 
     @staticmethod
     def see_video(video_stream_link: str, frame_size: tuple = None):
-    
+
         vcap = VideoCapture(video_stream_link)
-        while(1):
+        while 1:
             success, frame = vcap.read()
             frame = frame if frame_size is None else resize(frame, frame_size)
             imshow(video_stream_link, frame)
