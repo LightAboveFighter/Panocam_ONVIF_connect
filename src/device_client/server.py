@@ -1,3 +1,14 @@
+import sys
+import os
+
+# Get the directory of the current file (camera.py)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Add the parent directory to sys.path
+parent_dir = os.path.abspath(os.path.join(current_dir, ".."))  # Go up one level
+sys.path.insert(0, parent_dir)  # Insert at the beginning to prioritize
+
+
 from socket import AF_INET, SOCK_DGRAM, socket, setdefaulttimeout
 from json import dumps as json_dumps
 from json.decoder import JSONDecodeError
