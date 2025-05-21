@@ -1,0 +1,7 @@
+{
+    "ip": "77.232.155.123",
+    "port": "16068",
+    "user": "falt",
+    "password": "panofalt1234",
+    "rtsp_url": "rtsp://falt:panofalt1234@77.232.155.123:559"
+}
