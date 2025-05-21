@@ -24,7 +24,7 @@ class UserInput(QtWidgets.QMainWindow, text_window.Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.pushButton.clicked.connect(self.connect_user_input)
-    
+
     def connect_user_input(self):
         login = self.textEdit.toPlainText()
         password = self.textEdit_2.toPlainText()
@@ -36,15 +36,12 @@ class UserInput(QtWidgets.QMainWindow, text_window.Ui_MainWindow):
         cv_stream = cam.get_video_stream(rtsp_url)
         if cv_stream is None or not cv_stream.isOpened():
             raise Exception(f"Error opening RTSP stream: {rtsp_url}")
-        
-        connection_info = {
-               "ip": ip,
-                "port": port,
-                "login": login,
-                "rtsp": rtsp_url
-             }
 
-        self.video_window = VideoCaptureWidget(cv_stream, connection_info=connection_info)
+        connection_info = {"ip": ip, "port": port, "login": login, "rtsp": rtsp_url}
+
+        self.video_window = VideoCaptureWidget(
+            cv_stream, connection_info=connection_info, camera=cam
+        )
         self.video_window.show()
 
 
@@ -54,11 +51,11 @@ class CameraDialog(QtWidgets.QMainWindow, dialog_window.Ui_MainWindow):
         self.setupUi(self)
         self.pushButton_1.clicked.connect(self.connect_with_config)
         self.pushButton_2.clicked.connect(self.show_user_input)
-    
+
     def show_user_input(self):
         self.text_window = UserInput()
         self.text_window.show()
-    
+
     def connect_with_config(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.AnyFile)
@@ -78,18 +75,15 @@ class CameraDialog(QtWidgets.QMainWindow, dialog_window.Ui_MainWindow):
             cv_stream = cam.get_video_stream(rtsp_url)
             if cv_stream is None or not cv_stream.isOpened():
                 raise Exception(f"Error opening RTSP stream: {rtsp_url}")
-            
-            connection_info = {
-                "ip": ip,
-                "port": port,
-                "login": login,
-                "rtsp": rtsp_url
-                }
 
-            self.video_window = VideoCaptureWidget(cv_stream, connection_info=connection_info)
+            connection_info = {"ip": ip, "port": port, "login": login, "rtsp": rtsp_url}
+
+            self.video_window = VideoCaptureWidget(
+                cv_stream, connection_info=connection_info
+            )
             self.video_window.show()
 
-            
+
 class App(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
     def __init__(self):
         super().__init__()
@@ -107,5 +101,6 @@ def main():
     window.show()
     app.exec_()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

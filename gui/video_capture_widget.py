@@ -1,20 +1,38 @@
 import sys
-sys.path.insert(1, 'C:/Users/aggz1/MPTI Informatics/Sesestr4/cringeprak/Panocam_ONVIF_connect/src')
+
+sys.path.insert(
+    1, "C:/Users/aggz1/MPTI Informatics/Sesestr4/cringeprak/Panocam_ONVIF_connect/src"
+)
 
 from onvif import ONVIFCamera, ONVIFService
 from onvif.exceptions import ONVIFError
 from structures import Position, Speed
 
-from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout, QHBoxLayout, 
-                             QFormLayout, QPushButton, QGridLayout)
+from PyQt5.QtWidgets import (
+    QWidget,
+    QLabel,
+    QVBoxLayout,
+    QHBoxLayout,
+    QFormLayout,
+    QPushButton,
+    QGridLayout,
+)
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer
 import cv2
 
 from camera import Camera
 
+
 class VideoCaptureWidget(QWidget):
-    def __init__(self, cv_stream, parent=None, video_size=(1280, 960), connection_info=None, camera=None):
+    def __init__(
+        self,
+        cv_stream,
+        parent=None,
+        video_size=(1280, 960),
+        connection_info=None,
+        camera=None,
+    ):
         super().__init__(parent)
         self.video_capture = cv_stream
         self.video_size = video_size
@@ -53,7 +71,9 @@ class VideoCaptureWidget(QWidget):
         if self.connection_info:
             info_layout.addRow("IP:", QLabel(self.connection_info.get("ip", "N/A")))
             info_layout.addRow("Port:", QLabel(self.connection_info.get("port", "N/A")))
-            info_layout.addRow("Login:", QLabel(self.connection_info.get("login", "N/A")))
+            info_layout.addRow(
+                "Login:", QLabel(self.connection_info.get("login", "N/A"))
+            )
             info_layout.addRow("RTSP:", QLabel(self.connection_info.get("rtsp", "N/A")))
         return info_layout
 
@@ -71,7 +91,7 @@ class VideoCaptureWidget(QWidget):
         for btn in [self.btn_up, self.btn_down, self.btn_left, self.btn_right]:
             btn.setFixedSize(60, 40)
             btn.setStyleSheet("QPushButton {font-size: 20px;}")
-        
+
         self.btn_home = QPushButton("⌂", self)
         self.btn_home.setFixedSize(60, 40)
         self.btn_home.clicked.connect(self._go_home)
@@ -114,8 +134,6 @@ class VideoCaptureWidget(QWidget):
                 self.camera.continuousMove(speed, method_is_blocking=False)
             except ONVIFError as e:
                 print(f"PTZ Error: {str(e)}")
-
-
 
     def _stop_movement(self):
         """Handle button release events"""
