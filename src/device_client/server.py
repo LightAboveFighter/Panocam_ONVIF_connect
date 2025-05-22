@@ -9,12 +9,12 @@ parent_dir = os.path.abspath(os.path.join(current_dir, ".."))  # Go up one level
 sys.path.insert(0, parent_dir)  # Insert at the beginning to prioritize
 
 
-from socket import AF_INET, SOCK_DGRAM, socket, setdefaulttimeout
+from socket import AF_INET, SOCK_DGRAM, socket
 from json import dumps as json_dumps
 from json.decoder import JSONDecodeError
 
-import onvif.client
 from camera import Camera
+from discovery import scan_remote_address, scan_local_subnet
 from request_templates import RequestBody, implemented_types
 from marshmallow import Schema
 from marshmallow.exceptions import ValidationError as MarshmallowValidationError
@@ -88,7 +88,20 @@ class UserConnectionData:
             case "GetLimits":
                 return {"type": "Limits", "block": chosen_camera.getLimits()}
             # case "GetRTSP":
-            # case "GetAvailableCameras":
+            case "GetLocalCameras":
+                return {
+                    "type": "LocalCameras",
+                    "block": {"cameras": scan_local_subnet(block.get("speed", 2))},
+                }
+            case "GetRemoteCamera":
+                return {
+                    "type": "RemoteCamera",
+                    "block": {
+                        "camera": scan_remote_address(
+                            block["ip"], block.get("scan_timeout", 2)
+                        )
+                    },
+                }
 
             # CONTROL requests
 

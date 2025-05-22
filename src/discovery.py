@@ -36,7 +36,7 @@ def scan_remote_address(target_ip, scan_timeout=2):
 
     sock = socket(AF_INET, SOCK_DGRAM)
     sock.settimeout(scan_timeout)
-    sock.sendto(probe_xml.encode(), (target_ip, 3702))
+    sock.sendto(probe_xml.encode(), (str(target_ip), 3702))
 
     try:
         data, addr = sock.recvfrom(4096)

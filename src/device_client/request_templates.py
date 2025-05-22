@@ -108,6 +108,15 @@ class SetHomePositionBlock(NeedsCameraSchema):
 # GET BLOCK requests templates
 
 
+class GetLocalCamerasBlock(Schema):
+    scan_timeout = fields.Integer(required=False, strict=False, validate=Range(0, 100))
+
+
+class GetRemoteCameraBlock(Schema):
+    scan_timeout = fields.Integer(required=True, strict=False, validate=Range(0, 100))
+    ip = fields.IP(required=True)
+
+
 class GetPositionBlock(NeedsCameraSchema):
     pass
 
@@ -117,8 +126,6 @@ class GetLimitsBlock(NeedsCameraSchema):
 
 
 # class GetRTSPBlock(Schema):
-
-# class GetAvailableCamerasBlock(Schema):
 
 
 # CONTROL BLOCK requests templates
