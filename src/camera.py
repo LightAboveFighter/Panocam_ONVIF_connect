@@ -182,13 +182,19 @@ class Camera:
             ).as_dict(),
         }
 
-    # @__profile_token
-    # @__media_service
-    # def getRTSP(self):
-    #     request = self.media_service.create_type('GetStreamUri')
-    #     request.ProfileToken = self.profile_token
-    #     request.StreamSetup = {'Stream': 'RTP-Unicast', 'Transport': {'Protocol': 'RTSP'}}
-    #     print(type(self.media_service.GetStreamUri(request)["Uri"]))
+    @__profile_token
+    @__media_service
+    def getRTSP(self):
+        """returns RTSP-flow for the main profile"""
+        request = self.media_service.create_type("GetStreamUri")
+        request.ProfileToken = self.profile_token
+        request.StreamSetup = {
+            "Stream": "RTP-Unicast",
+            "Transport": {"Protocol": "RTSP"},
+        }
+
+        response = self.media_service.GetStreamUri(request)
+        return str(response.Uri)
 
     # set methods
 
