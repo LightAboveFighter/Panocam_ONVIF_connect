@@ -25,7 +25,7 @@ class RequestBody(Schema):
         super().__init__(*args, **kwargs)
 
     @validates("type")
-    def check_type(self, type):
+    def check_type(self, type, **kwargs):
         if not type in self.allowed_types:
             raise MarshmallowValidationError(message="Unknown type.", field_name="type")
 
