@@ -31,8 +31,8 @@ probe_xml = """<?xml version="1.0" encoding="UTF-8"?>
 </soap:Envelope>"""
 
 
-def scan_remote_address(target_ip, scan_timeout=5):
-    """return: (data, addr) if exist, else None"""
+def scan_remote_address(target_ip, scan_timeout=2):
+    """:return: (data, addr) if exist, else None"""
 
     sock = socket(AF_INET, SOCK_DGRAM)
     sock.settimeout(scan_timeout)
@@ -45,7 +45,7 @@ def scan_remote_address(target_ip, scan_timeout=5):
         return None
 
 
-def scan_local_subnet(scan_timeout=5):
+def scan_local_subnet(scan_timeout=2):
     """
     Сканирует все устройства в подсети через multicast.
     Автоматически определяет локальный IP.
