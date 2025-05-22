@@ -87,7 +87,8 @@ class UserConnectionData:
                 }
             case "GetLimits":
                 return {"type": "Limits", "block": chosen_camera.getLimits()}
-            # case "GetRTSP":
+            case "GetRTSP":
+                return {"type": "RTSP", "block": {"RTSP": chosen_camera.getRTSP()}}
             case "GetLocalCameras":
                 return {
                     "type": "LocalCameras",

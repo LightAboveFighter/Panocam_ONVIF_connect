@@ -125,8 +125,8 @@ class GetLimitsBlock(NeedsCameraSchema):
     pass
 
 
-# class GetRTSPBlock(Schema):
-
+class GetRTSPBlock(NeedsCameraSchema):
+    pass
 
 # CONTROL BLOCK requests templates
 
