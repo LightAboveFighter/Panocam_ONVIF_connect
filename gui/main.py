@@ -79,7 +79,7 @@ class CameraDialog(QtWidgets.QMainWindow, dialog_window.Ui_MainWindow):
             connection_info = {"ip": ip, "port": port, "login": login, "rtsp": rtsp_url}
 
             self.video_window = VideoCaptureWidget(
-                cv_stream, connection_info=connection_info
+                cv_stream, connection_info=connection_info, camera=cam
             )
             self.video_window.show()
 
