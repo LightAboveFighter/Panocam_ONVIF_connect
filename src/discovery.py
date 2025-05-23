@@ -54,7 +54,6 @@ def scan_local_subnet(scan_timeout=5):
     :return: Список найденных устройств в формате {ip, xaddr, types}
     """
 
-    # Остальной код остается без изменений
     message_id = f"uuid:{uuid4()}"
     probe_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
     <soap:Envelope
