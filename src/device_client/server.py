@@ -5,8 +5,8 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Add the parent directory to sys.path
-parent_dir = os.path.abspath(os.path.join(current_dir, ".."))  # Go up one level
-sys.path.insert(0, parent_dir)  # Insert at the beginning to prioritize
+parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
+sys.path.insert(0, parent_dir)
 
 
 from socket import AF_INET, SOCK_DGRAM, socket
@@ -87,8 +87,7 @@ class UserConnectionData:
                 }
             case "GetLimits":
                 return {"type": "Limits", "block": chosen_camera.getLimits()}
-            case "GetRTSP":
-                return {"type": "RTSP", "block": {"RTSP": chosen_camera.getRTSP()}}
+            # case "GetRTSP":
             case "GetLocalCameras":
                 return {
                     "type": "LocalCameras",

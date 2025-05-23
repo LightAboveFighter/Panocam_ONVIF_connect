@@ -89,9 +89,18 @@ class VideoCaptureWidget(QWidget):
         self.btn_down = QPushButton("↓", self)
         self.btn_left = QPushButton("←", self)
         self.btn_right = QPushButton("→", self)
+        self.btn_zoom_closer = QPushButton("🔍+", self)
+        self.btn_zoom_away = QPushButton("🔍-", self)
 
         # Style buttons
-        for btn in [self.btn_up, self.btn_down, self.btn_left, self.btn_right]:
+        for btn in [
+            self.btn_up,
+            self.btn_down,
+            self.btn_left,
+            self.btn_right,
+            self.btn_zoom_closer,
+            self.btn_zoom_away,
+        ]:
             btn.setFixedSize(60, 40)
             btn.setStyleSheet("QPushButton {font-size: 20px;}")
 
@@ -105,21 +114,26 @@ class VideoCaptureWidget(QWidget):
         controls_layout.addWidget(self.btn_left, 1, 0)
         controls_layout.addWidget(self.btn_right, 1, 2)
         controls_layout.addWidget(self.btn_down, 2, 1)
+        controls_layout.addWidget(self.btn_zoom_closer, 1, 3)
+        controls_layout.addWidget(self.btn_zoom_away, 2, 3)
 
         self.btn_up.pressed.connect(self._start_movement)
         self.btn_down.pressed.connect(self._start_movement)
         self.btn_left.pressed.connect(self._start_movement)
         self.btn_right.pressed.connect(self._start_movement)
+        self.btn_zoom_away.pressed.connect(self._start_zoom)
+        self.btn_zoom_closer.pressed.connect(self._start_zoom)
 
         self.btn_up.released.connect(self._stop_movement)
         self.btn_down.released.connect(self._stop_movement)
         self.btn_left.released.connect(self._stop_movement)
         self.btn_right.released.connect(self._stop_movement)
+        self.btn_zoom_away.pressed.connect(self._stop_movement)
+        self.btn_zoom_closer.pressed.connect(self._stop_movement)
 
         return controls_layout
 
     def _start_movement(self):
-        print("UUUUP")
         sender = self.sender()
 
         if sender == self.btn_up:
@@ -133,7 +147,6 @@ class VideoCaptureWidget(QWidget):
         else:
             return
 
-        print(self.camera)
         if self.camera:
             try:
                 print("self.camera:")
@@ -141,6 +154,31 @@ class VideoCaptureWidget(QWidget):
                 self.camera.continiousMove(speed, method_is_blocking=False)
             except ONVIFError as e:
                 print(f"PTZ Error: {str(e)}")
+
+    def _start_zoom(self):
+        sender = self.sender()
+
+        if sender == self.btn_zoom_closer:
+            speed = Speed(x_speed=0.0, y_speed=0.0, zoom_speed=1.0)
+        elif sender == self.btn_zoom_away:
+            speed = Speed(x_speed=0.0, y_speed=0.0, zoom_speed=-1.0)
+        else:
+            return
+
+        if self.camera:
+            try:
+                self.camera.continiousMove(speed, method_is_blocking=False)
+            except ONVIFError as e:
+                print(f"PTZ Error: {str(e)}")
+
+    # def _stop_zoom(self):
+    #     """Handle button release events"""
+    #     if self.camera:
+    #         try:
+    #             # Stop both pan/tilt and zoom
+    #             self.camera.stop(stop_zoom=True)
+    #         except ONVIFError as e:
+    #             print(f"Stop Error: {str(e)}")
 
     def _stop_movement(self):
         """Handle button release events"""

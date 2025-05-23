@@ -16,7 +16,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Add the parent directory to sys.path
 parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
-sys.path.insert(0, parent_dir)  # Insert at the beginning to prioritize
+sys.path.insert(0, parent_dir)
 
 
 from structures import Position, Speed

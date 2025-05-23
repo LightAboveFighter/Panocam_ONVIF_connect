@@ -11,7 +11,7 @@ from onvif import ONVIFCamera, ONVIFService
 from onvif.exceptions import ONVIFError
 from structures import Position, Speed
 
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QWidget,
     QLabel,
     QVBoxLayout,
@@ -20,8 +20,8 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QGridLayout,
 )
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import QTimer
+from PyQt6.QtGui import QImage, QPixmap
+from PyQt6.QtCore import QTimer
 import cv2
 
 from camera import Camera
