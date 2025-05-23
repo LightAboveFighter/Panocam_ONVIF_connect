@@ -48,6 +48,9 @@ class VideoCaptureWidget(QWidget):
 
         # Initialize UI components
         self.image_label = QLabel(self)
+        # Create a QLabel to display the position
+        self.position_label = QLabel("Position: Unknown", self)
+        self.position_label.setStyleSheet("font-size: 16px;")
         self._setup_ui()
 
         # Set up video update timer
@@ -68,17 +71,25 @@ class VideoCaptureWidget(QWidget):
         main_layout.addLayout(video_info_layout)
         main_layout.addLayout(self._create_ptz_controls())
 
+
     def _create_info_panel(self):
         """Create connection information panel"""
         info_layout = QFormLayout()
         if self.connection_info:
             info_layout.addRow("IP:", QLabel(self.connection_info.get("ip", "N/A")))
-            info_layout.addRow("Port:", QLabel(self.connection_info.get("port", "N/A")))
-            info_layout.addRow(
-                "Login:", QLabel(self.connection_info.get("login", "N/A"))
-            )
+            info_layout.addRow("Port:", QLabel(str(self.connection_info.get("port", "N/A"))))
+            info_layout.addRow("Login:", QLabel(self.connection_info.get("login", "N/A")))
             info_layout.addRow("RTSP:", QLabel(self.connection_info.get("rtsp", "N/A")))
+
+        if self.camera:
+            try:
+                pos = self.camera.getPosition()
+                info_layout.addRow("Position:", QLabel(str(pos)))
+            except Exception as e:
+                info_layout.addRow("Position:", QLabel("Error"))
+
         return info_layout
+
 
     def _create_ptz_controls(self):
         """Create PTZ control buttons arranged in arrow pattern"""
@@ -171,14 +182,6 @@ class VideoCaptureWidget(QWidget):
             except ONVIFError as e:
                 print(f"PTZ Error: {str(e)}")
 
-    # def _stop_zoom(self):
-    #     """Handle button release events"""
-    #     if self.camera:
-    #         try:
-    #             # Stop both pan/tilt and zoom
-    #             self.camera.stop(stop_zoom=True)
-    #         except ONVIFError as e:
-    #             print(f"Stop Error: {str(e)}")
 
     def _stop_movement(self):
         """Handle button release events"""
@@ -195,6 +198,7 @@ class VideoCaptureWidget(QWidget):
                 self.camera.gotoHomePosition()
             except ONVIFError as e:
                 print(f"Home Position Error: {str(e)}")
+
 
     def update_frame(self):
         """Update video feed display"""
